@@ -1,0 +1,18 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="Eslint" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="PhpCSFixerValidationInspection" enabled="false" level="WEAK WARNING" enabled_by_default="false">
+      <scope name="All Changed Files" level="WEAK WARNING" enabled="false" />
+      <scope name="Project Files" level="WEAK WARNING" enabled="false" />
+    </inspection_tool>
+    <inspection_tool class="PhpCSValidationInspection" enabled="false" level="WEAK WARNING" enabled_by_default="false">
+      <scope name="All Changed Files" level="WEAK WARNING" enabled="false">
+        <option name="CODING_STANDARD" value="Custom" />
+        <option name="CUSTOM_RULESET_PATH" value="$USER_HOME$/Development/folderz-api/phpcs.xml.dist" />
+      </scope>
+      <option name="CODING_STANDARD" value="Custom" />
+      <option name="CUSTOM_RULESET_PATH" value="$USER_HOME$/Development/folderz-api/phpcs.xml.dist" />
+    </inspection_tool>
+  </profile>
+</component>

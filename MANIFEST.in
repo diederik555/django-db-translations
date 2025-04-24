@@ -1,0 +1,5 @@
+include LICENSE
+include README.md
+recursive-include db_translations/templates *
+recursive-include db_translations/static *
+recursive-include docs *
