@@ -4,7 +4,7 @@ from django.core.cache import cache
 from threading import local
 from django.conf import settings
 from .models import Translation, Language
-from .signals import TRANSLATION_CACHE_KEY_PREFIX
+from .constants import TRANSLATION_CACHE_KEY_PREFIX
 
 
 class DatabaseTranslation:
@@ -151,6 +151,27 @@ class DatabaseTranslation:
         original_translation_func = getattr(trans_real, '_original_translation', trans_real.translation)
         return original_translation_func(language)
 
+    def reset_translation_cache(self, lang_code=None):
+        """
+        Reset both the Redis cache and the in-memory translation objects.
+        If lang_code is provided, only reset for that language.
+        """
+        if lang_code:
+            # Clear specific language cache
+            cache_key = f"{TRANSLATION_CACHE_KEY_PREFIX}_{lang_code}"
+            cache.delete(cache_key)
+            # Remove from our original translations dict
+            if lang_code in self._original_django_translations:
+                del self._original_django_translations[lang_code]
+        else:
+            # Clear all language caches
+            cache.delete(TRANSLATION_CACHE_KEY_PREFIX)
+            # Clear all our original translations
+            self._original_django_translations.clear()
+            
+        # Clear Django's internal translation cache to force reload
+        trans_real._translations.clear()
+    
 
 # Create a singleton instance
 db_translation = DatabaseTranslation()
@@ -163,3 +184,15 @@ def activate_db_translation():
     """
     # Monkey patch Django's translation function
     trans_real.translation = db_translation.translation
+
+
+def clear_translations():
+    """
+    Clear Django's in-memory translation objects to force reloading translations from database.
+    This should be called when translations are updated.
+    """
+    # Clear Django's internal translation cache
+    trans_real._translations.clear()
+    
+    # Clear our db_translation patched objects cache
+    db_translation._original_django_translations.clear()

@@ -2,7 +2,7 @@ from django.test import TestCase, override_settings
 from django.core.cache import cache
 from django.utils import translation
 from .models import Language, Translation
-from .signals import TRANSLATION_CACHE_KEY_PREFIX
+from .constants import TRANSLATION_CACHE_KEY_PREFIX
 from .translation import activate_db_translation
 
 
