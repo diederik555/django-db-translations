@@ -1,6 +1,7 @@
 import functools
 from django.utils.translation import trans_real
 from django.core.cache import cache
+from threading import local
 from django.conf import settings
 from .models import Translation, Language
 from .signals import TRANSLATION_CACHE_KEY_PREFIX
@@ -14,6 +15,8 @@ class DatabaseTranslation:
     def __init__(self):
         # The original _DJANGO_TRANSLATION attribute
         self._original_django_translations = {}
+        # Thread-local storage for tracking translation state
+        self._local = local()
         # Cache timeout (default to 24 hours)
         self.cache_timeout = getattr(settings, 'DB_TRANSLATIONS_CACHE_TIMEOUT', 60 * 60 * 24)
     
@@ -56,9 +59,20 @@ class DatabaseTranslation:
         Returns a translation object for a language.
         This overrides Django's get_translation function to use database translations.
         """
-        # Get the original Django translation object
-        django_translation = trans_real.translation(language)
+        # Check if we're already in a translation lookup to prevent recursion
+        if getattr(self._local, 'in_translation', False):
+            return self._get_original_translation(language)
+
+        # Set the translation lookup flag
+        self._local.in_translation = True
         
+        # Get the original Django translation object
+        try:
+            django_translation = self._get_original_translation(language)
+        finally:
+            # Always clear the translation lookup flag
+            self._local.in_translation = False
+
         # If we've already patched this translation object, return it
         if hasattr(django_translation, '_db_patched'):
             return django_translation
@@ -129,6 +143,13 @@ class DatabaseTranslation:
         django_translation._db_patched = True
         
         return django_translation
+
+    def _get_original_translation(self, language):
+        """
+        Get the original Django translation object without our override
+        """
+        original_translation_func = getattr(trans_real, '_original_translation', trans_real.translation)
+        return original_translation_func(language)
 
 
 # Create a singleton instance

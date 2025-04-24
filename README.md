@@ -57,6 +57,7 @@ MIDDLEWARE = [
 Run migrations to create the necessary database tables:
 
 ```shell script
+python manage.py makemigrations db_translations
 python manage.py migrate db_translations
 ```
 
